@@ -1,4 +1,13 @@
-# React + TypeScript + Vite
+# Public Promote
+
+Are you facing challenges creating advertisements or finding participants for your questionnaire? This application prototype simplifies the process, allowing anyone to post their advertisements for free without the need for user accounts. To remove an advertisement, users simply delete it using the unique hash key provided upon posting.
+
+This prototype is developed using React.ts with Next.js UI.
+
+## Demo
+You can access the live prototype at
+
+## React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
@@ -28,3 +37,4 @@ export default {
 - Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
 - Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
 - Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+"# publicpromote" 
