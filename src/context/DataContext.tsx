@@ -3,11 +3,12 @@ import Loading from '../utils/Loading';
 import { DocumentSnapshot, collection, getDocs } from 'firebase/firestore';
 import { mydb } from '../config/firebase';
 
-interface Data {
-  date: Date;
+export interface Data {
+  date: string;
   hash: string;
   image: string;
   name: string;
+  category: string;
 }
 
 interface DataContextType {

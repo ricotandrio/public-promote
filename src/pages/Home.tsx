@@ -9,108 +9,36 @@ import {
   Image,
   CardFooter,
   CardHeader,
-  Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Input, Spinner
+  Dropdown, DropdownTrigger, DropdownMenu, DropdownItem,
+  Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Input, Spinner, Snippet
 } from "@nextui-org/react";
 import '../assets/index.css';
 import { DataContext } from '../context/DataContext';
 import { extractYearMonthDay } from '../utils/ToDate';
 import { HandleInfo } from '../utils/HandleInfo';
-
-interface EachImageProps {
-  src: string;
-  code: string;
-  date: string;
-}
-
-const EachImage = ({ src, code, date }: EachImageProps) => {
-
-  const [warning, setWarning] = useState<string>("Code");
-  const [loading, setLoading] = useState<boolean>(false);
-  const {isOpen, onOpen, onOpenChange} = useDisclosure();
-  const [currCode, setCurrCode] = useState<string>('');
-
-  const { db, setDB } = useContext(DataContext);
-
-  const handleRemove = () => {
-    if(currCode === ''){
-      setWarning("Code fields is empty!");
-      return;
-    }
-
-    setLoading(true);
-    setTimeout(() => {
-      if(currCode === code || currCode === import.meta.env.VITE_ADMIN_KEY){
-        setDB(db.filter((element) => element.hash !== code));
-      } else {
-        setWarning("Wrong code, please try again")
-      }
-      setCurrCode('');
-      setLoading(false);
-    }, 5000);
-  }
-
-  return (
-    <>
-      <Card
-        isFooterBlurred
-        radius='lg'
-        className='border-none bg-black mb-10'
-      >
-        <Image
-          className='object-cover'
-          alt='image'
-          src={src}
-        />
-        <CardFooter className="m-2 justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_16px)] shadow-small ml-2 z-10">
-          <p className="text-tiny text-white/80">{date}</p>
-          <Button 
-            onPress={onOpen}
-            isLoading={loading}
-            className="text-tiny text-white " variant="ghost" color="danger" radius="lg" size="sm"
-          >
-            REMOVE
-          </Button>
-        </CardFooter>
-      </Card>
-
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop={"blur"} className='pt-1'>
-        <ModalContent>
-          <ModalHeader>Input Your Info Code</ModalHeader>
-          <ModalBody>
-            <div className="flex w-auto flex-wrap md:flex-nowrap gap-4">
-              <Input type="code" label={warning} value={currCode} onChange={(e) => setCurrCode(e.target.value)} />
-            </div>
-          </ModalBody>
-          <ModalFooter>
-            <Button color="success" variant="light" onClick={() => handleRemove()}>
-              Confirm
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-
-      <Modal isOpen={loading}  backdrop={"blur"}  hideCloseButton className='py-14'>
-        <ModalContent>
-          <ModalBody>
-            <Spinner label="" color="success" labelColor="success"/>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-      
-    </>
-  )
-}
+import EachImage from '../components/EachImage';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbsUp } from '@fortawesome/free-regular-svg-icons';
+import { faCircleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { items } from '../utils/DropDownList';
+import { ProgressLoading } from '../utils/Loading';
 
 const Home = () => {
   
-  const { db } = useContext(DataContext);
+  const { db, setDB } = useContext(DataContext);
   const [isOpen, setOpen] = useState<boolean>(false);
+
   const [success, setSuccess] = useState<boolean>(false);
   const [fail, setFail] = useState<boolean>(false);
 
   const [name, setName] = useState<string>('');
   const [file, setFile] = useState<File>();
-  console.log(db);
+
+  const [select, setSelect] = useState(new Set(["category"]));
+  
+  const [hash, setHash] = useState<string>('');
+
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setFile(undefined);
@@ -119,7 +47,7 @@ const Home = () => {
   useEffect(() => {
     setTimeout(() => {
       setSuccess(false);
-    }, 2000);
+    }, 4000);
   }, [success]);
 
   useEffect(() => {
@@ -168,8 +96,8 @@ const Home = () => {
           }
         </section>
       </main>
-
-      <Modal isOpen={isOpen} backdrop={"blur"} className='pt-1'>
+        
+      <Modal isOpen={isOpen} backdrop={"blur"} className='pt-1' onClose={() => setOpen(false)}>
         <ModalContent>
           <ModalHeader>Create New Info</ModalHeader>
           <ModalBody>
@@ -179,24 +107,56 @@ const Home = () => {
                 e.preventDefault();
 
                 if(file && name){
-                  HandleInfo(name, file, setSuccess, setFail);
+                  setLoading(true);
+                  HandleInfo(name, file, select, setSuccess, setFail, setHash, db, setDB, setLoading);
+                  
                   setFile(undefined);
                   setName('');
                   setOpen(false);
                 }
               }}
             >
+              
               <Input type='name' label='name' className='mb-5' value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}/>
               <Input 
                 type='file' 
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                  console.log('file uploaded');
                   if(e.target.files && e.target.files[0]){
+                    console.log('file uploaded');
                     setFile(e.target.files[0]);
                   }
                 }}
               />
-              <h1 className='mt-2 ml-2'>Selected File: {file ? file.name : 'none'}</h1>
+              <h1 className='mt-2 ml-2 text-sm'>Selected File: {file ? file.name : 'none'}</h1>
+
+              <Dropdown className='ml-16'>
+                <DropdownTrigger className='mt-5'>
+                  <Button 
+                    variant="solid"
+                    className='bg-gray-100' 
+                  >
+                    {select}
+                  </Button>
+                </DropdownTrigger>
+                <DropdownMenu 
+                  aria-label="dropdown menu" 
+                  items={items}
+                  disallowEmptySelection
+                  selectionMode="single"
+                  selectedKeys={select}
+                  onSelectionChange={setSelect}
+                >
+                  {(item) => (
+                    <DropdownItem
+                      key={item.key}
+                      color={"default"}
+                    >
+                      {item.label}
+                    </DropdownItem>
+                  )}
+                </DropdownMenu>
+              </Dropdown>
+
               <ModalFooter>
                 <Button type='submit' variant="shadow" color='success' className='text-white'>CREATE</Button>
               </ModalFooter>
@@ -204,22 +164,38 @@ const Home = () => {
           </ModalBody>
         </ModalContent>
       </Modal>
-
-      <Modal isOpen={success} backdrop={"blur"}  hideCloseButton className='py-14'>
+                  
+      <Modal isOpen={success} backdrop={"blur"}  hideCloseButton className='pt-14 pb-10'>
         <ModalContent>
-          <ModalBody>
-            <Spinner label="sucess" color="success" labelColor="success"/>
+          <ModalBody className='flex items-center text-green-500'>
+            <FontAwesomeIcon icon={faThumbsUp} className='text-5xl' />
+            <h2 className='mt-3 text-sm'>The unique hash code is used for deleting posts.</h2>
+            <Snippet
+              tooltipProps={{
+                color: "foreground",
+                content: "copy unique hash code",
+                disableAnimation: true,
+                placement: "right",
+                closeDelay: 0
+              }}
+              className='mt-3'
+            >
+              {hash}
+            </Snippet>
           </ModalBody>
         </ModalContent>
       </Modal>
 
       <Modal isOpen={fail} backdrop={"blur"}  hideCloseButton className='py-14'>
         <ModalContent>
-          <ModalBody>
-            <Spinner label="failed" color="warning" labelColor="warning"/>
+          <ModalBody className='flex items-center text-red-500'>
+            <FontAwesomeIcon icon={faCircleExclamation} className='text-5xl'/>
+            <h2>failed</h2>
           </ModalBody>
         </ModalContent>
       </Modal>
+      
+      <ProgressLoading loading={loading} />
     </>
   );
 }

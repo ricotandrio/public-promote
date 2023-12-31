@@ -1,4 +1,4 @@
-export const extractYearMonthDay = (date: Date): string => {
+export const extractYearMonthDay = (date: string): string => {
   const originalDate = new Date(date);
 
   const year = originalDate.getFullYear();

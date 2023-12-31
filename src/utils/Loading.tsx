@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import {Card, Skeleton, Button} from "@nextui-org/react";
+import {Card, Skeleton, Button, Modal, ModalContent, ModalBody, Spinner} from "@nextui-org/react";
 
 const Loading = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -28,5 +28,23 @@ const Loading = () => {
     </>
   )
 }
+
+interface ProgressLoadingProps {
+  loading: boolean;
+}
+
+export const ProgressLoading: React.FC<ProgressLoadingProps> = ({ loading }) => {
+  return (
+    <>
+      <Modal isOpen={loading} backdrop="blur" hideCloseButton className='py-14'>
+        <ModalContent>
+          <ModalBody>
+            <Spinner label="" color="success" labelColor="success"/>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+};
 
 export default Loading;
