@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import {
   Navbar, 
   NavbarBrand, 
@@ -8,10 +8,13 @@ import {
   Button,
   Image,
   CardFooter,
+  CardHeader,
   Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Input, Spinner
 } from "@nextui-org/react";
 import '../assets/index.css';
 import { DataContext } from '../context/DataContext';
+import { extractYearMonthDay } from '../utils/ToDate';
+import { HandleInfo } from '../utils/HandleInfo';
 
 interface EachImageProps {
   src: string;
@@ -21,21 +24,27 @@ interface EachImageProps {
 
 const EachImage = ({ src, code, date }: EachImageProps) => {
 
+  const [warning, setWarning] = useState<string>("Code");
   const [loading, setLoading] = useState<boolean>(false);
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
-  const [currCode, setCurrCode] = useState<string>();
+  const [currCode, setCurrCode] = useState<string>('');
 
   const { db, setDB } = useContext(DataContext);
 
   const handleRemove = () => {
-    
-    if(currCode === code){
-      setLoading(true);
-      setDB(db.filter((element) => element.hash !== currCode));
-    } 
+    if(currCode === ''){
+      setWarning("Code fields is empty!");
+      return;
+    }
 
-    setCurrCode('');
+    setLoading(true);
     setTimeout(() => {
+      if(currCode === code || currCode === import.meta.env.VITE_ADMIN_KEY){
+        setDB(db.filter((element) => element.hash !== code));
+      } else {
+        setWarning("Wrong code, please try again")
+      }
+      setCurrCode('');
       setLoading(false);
     }, 5000);
   }
@@ -53,7 +62,7 @@ const EachImage = ({ src, code, date }: EachImageProps) => {
           src={src}
         />
         <CardFooter className="m-2 justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_16px)] shadow-small ml-2 z-10">
-          <p className="text-tiny text-white/80">Want to remove this info ?</p>
+          <p className="text-tiny text-white/80">{date}</p>
           <Button 
             onPress={onOpen}
             isLoading={loading}
@@ -69,7 +78,7 @@ const EachImage = ({ src, code, date }: EachImageProps) => {
           <ModalHeader>Input Your Info Code</ModalHeader>
           <ModalBody>
             <div className="flex w-auto flex-wrap md:flex-nowrap gap-4">
-              <Input type="code" label="Code" value={currCode} onChange={(e) => setCurrCode(e.target.value)} />
+              <Input type="code" label={warning} value={currCode} onChange={(e) => setCurrCode(e.target.value)} />
             </div>
           </ModalBody>
           <ModalFooter>
@@ -79,7 +88,7 @@ const EachImage = ({ src, code, date }: EachImageProps) => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      
+
       <Modal isOpen={loading}  backdrop={"blur"}  hideCloseButton className='py-14'>
         <ModalContent>
           <ModalBody>
@@ -87,6 +96,7 @@ const EachImage = ({ src, code, date }: EachImageProps) => {
           </ModalBody>
         </ModalContent>
       </Modal>
+      
     </>
   )
 }
@@ -94,9 +104,29 @@ const EachImage = ({ src, code, date }: EachImageProps) => {
 const Home = () => {
   
   const { db } = useContext(DataContext);
-  const {isOpen, onOpen, onOpenChange} = useDisclosure();
-  const {success, setSuccess} = useState<boolean>(false);
-  const {fail, setFail} = useState<boolean>(false);
+  const [isOpen, setOpen] = useState<boolean>(false);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [fail, setFail] = useState<boolean>(false);
+
+  const [name, setName] = useState<string>('');
+  const [file, setFile] = useState<File>();
+  console.log(db);
+
+  useEffect(() => {
+    setFile(undefined);
+  }, [isOpen]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setSuccess(false);
+    }, 2000);
+  }, [success]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setFail(false);
+    }, 2000);
+  }, [fail]);
 
   return (
     <>
@@ -119,7 +149,7 @@ const Home = () => {
 
         <NavbarContent className='border border-black' justify='end'>
           <NavbarItem>
-            <Button className='text-white' radius='full' variant='shadow' color='success' onPress={onOpen}>
+            <Button className='text-white' radius='full' variant='shadow' color='success' onClick={() => setOpen(true)}>
               ADD INFO
             </Button>
           </NavbarItem>
@@ -132,14 +162,14 @@ const Home = () => {
         </section>
         <section className='w-full flex items-center justify-center flex-col'>
           {
-            db.map((element) => (
-              <EachImage src={element.link} code={element.hash} date={element.date}/>
+            db.map((element, index) => (
+              <EachImage key={index} src={element.image} code={element.hash} date={extractYearMonthDay(element.date)}/>
             ))
           }
         </section>
       </main>
 
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange} backdrop={"blur"} className='pt-1'>
+      <Modal isOpen={isOpen} backdrop={"blur"} className='pt-1'>
         <ModalContent>
           <ModalHeader>Create New Info</ModalHeader>
           <ModalBody>
@@ -147,31 +177,46 @@ const Home = () => {
               action="" 
               onSubmit={(e) => {
                 e.preventDefault();
-                
+
+                if(file && name){
+                  HandleInfo(name, file, setSuccess, setFail);
+                  setFile(undefined);
+                  setName('');
+                  setOpen(false);
+                }
               }}
             >
-              <Input type='name' label='name' className='mb-5'/>
-              <Input type='file'/>
+              <Input type='name' label='name' className='mb-5' value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}/>
+              <Input 
+                type='file' 
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  console.log('file uploaded');
+                  if(e.target.files && e.target.files[0]){
+                    setFile(e.target.files[0]);
+                  }
+                }}
+              />
+              <h1 className='mt-2 ml-2'>Selected File: {file ? file.name : 'none'}</h1>
+              <ModalFooter>
+                <Button type='submit' variant="shadow" color='success' className='text-white'>CREATE</Button>
+              </ModalFooter>
             </form>
           </ModalBody>
-          <ModalFooter>
-            <Button type='submit'>SUBMIT</Button>
-          </ModalFooter>
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={success}  backdrop={"blur"}  hideCloseButton className='py-14'>
+      <Modal isOpen={success} backdrop={"blur"}  hideCloseButton className='py-14'>
         <ModalContent>
           <ModalBody>
-            <Spinner label="" color="success" labelColor="success"/>
+            <Spinner label="sucess" color="success" labelColor="success"/>
           </ModalBody>
         </ModalContent>
       </Modal>
 
-      <Modal isOpen={fail}  backdrop={"blur"}  hideCloseButton className='py-14'>
+      <Modal isOpen={fail} backdrop={"blur"}  hideCloseButton className='py-14'>
         <ModalContent>
           <ModalBody>
-            <Spinner label="" color="success" labelColor="success"/>
+            <Spinner label="failed" color="warning" labelColor="warning"/>
           </ModalBody>
         </ModalContent>
       </Modal>

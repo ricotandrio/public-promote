@@ -1,9 +1,13 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
+import Loading from '../utils/Loading';
+import { DocumentSnapshot, collection, getDocs } from 'firebase/firestore';
+import { mydb } from '../config/firebase';
 
 interface Data {
-  link: string;
+  date: Date;
   hash: string;
-  date: string;
+  image: string;
+  name: string;
 }
 
 interface DataContextType {
@@ -13,28 +17,45 @@ interface DataContextType {
 
 export const DataContext = createContext<DataContextType>({} as DataContextType);
 
-const dummyDB = [
-  {
-    "link": "https://media.discordapp.net/attachments/989321529915482222/1173966621803556914/Poster_DIGIN.jpg?ex=659d3f9d&is=658aca9d&hm=f9f3d1a37141a9def232ff6134d49ccb6bb9b0eea543d8a9f4d944cdbcc944ca&=&format=webp&width=373&height=663",
-    "hash": "abcde",
-    "date": "2022-03-26T18:14:29Z",
-    "name": "skjfsdfs",
-  }
-]
-
 const DataProvider = ({ children }: { children: React.ReactNode }) => {
-  const [db, setDB] = useState<Data[]>(dummyDB);
+  const [db, setDB] = useState<Data[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const contextValue: DataContextType = {
-    db,
-    setDB,
-  };
+  const contextValue: DataContextType = { db, setDB };
 
-  return (
-    <DataContext.Provider value={contextValue}>
-      {children}
-    </DataContext.Provider>
-  );
+  useEffect(() => {
+    setLoading(true); 
+    try {
+      const getDB = async () => {
+        const data = await getDocs(collection(mydb, "banner"));
+        const newData: Data[] = [];
+
+        // Collect data in a temporary array
+        data.docs.forEach((curr: DocumentSnapshot) => {
+          newData.push(curr.data() as Data);
+        });
+
+        setDB(newData); // Update state once with all the collected data
+        setLoading(false);
+      }
+
+      getDB();
+    } catch(e) {
+      console.error(e);
+    }
+
+  }, []);
+
+  if(loading === true){
+    return <Loading/>;
+  } else {
+
+    return (
+      <DataContext.Provider value={contextValue}>
+        {children}
+      </DataContext.Provider>
+    );
+  }
 };
 
 export default DataProvider;
