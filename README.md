@@ -1,8 +1,8 @@
 # Public Promote
 
-Are you facing challenges creating advertisements or finding participants for your questionnaire? This application prototype simplifies the process, allowing anyone to post their advertisements for free without the need for user accounts. To remove an advertisement, users simply delete it using the unique hash key provided upon posting.
+Are you facing challenges creating advertisements or finding participants for your questionnaire? This application prototype simplifies the process, allowing anyone to post their advertisements for free without creating accounts. To remove an advertisement, users simply delete it using the unique hash key provided upon posting.
 
-This prototype is developed using React.ts with Next.js UI.
+This prototype is developed using React.ts, Next.UI, and Firebase.
 
 ## Demo
 You can access the live prototype at
