@@ -1,5 +1,9 @@
-export const extractYearMonthDay = (date: string): string => {
-  const originalDate = new Date(date);
+type extractYearMonthDayProps = {
+  date: string
+}
+
+export const extractYearMonthDay = (props: extractYearMonthDayProps): string => {
+  const originalDate = new Date(props.date);
 
   const year = originalDate.getFullYear();
   const monthNames = [

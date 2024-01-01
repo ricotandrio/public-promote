@@ -1,23 +1,29 @@
-import React, { Dispatch } from 'react'
-import { Data } from '../context/DataContext'
-import { deleteDoc, doc, setDoc } from 'firebase/firestore'
+import { Dispatch } from 'react'
+import { deleteDoc, doc } from 'firebase/firestore'
 import { mydb, storage } from '../config/firebase'
 import { deleteObject, ref } from 'firebase/storage'
 
-export const RemoveInfo = async (code: string, setLoading: Dispatch<boolean>, setCurrCode: Dispatch<string>, setOpen: Dispatch<boolean>) => {
+type RemoveInfoProps = {
+  code: string
+  setLoading: Dispatch<boolean>
+  setCurrCode: Dispatch<string>
+  setOpen: Dispatch<boolean>
+}
+
+export const RemoveInfo = async (props: RemoveInfoProps) => {
 
   try {
 
     await Promise.all([
-      deleteDoc(doc(mydb, "banner", code)), 
-      deleteObject(ref(storage, `storage/${code}`))
+      deleteDoc(doc(mydb, "banner", props.code)), 
+      deleteObject(ref(storage, `storage/${props.code}`))
     ]);
     
-    setOpen(false);
-    setLoading(false);
-    setCurrCode('');
+    props.setOpen(false);
+    props.setLoading(false);
+    props.setCurrCode('');
   } catch (error) {
     console.error("Error deleting:", error);
-    setLoading(false);
+    props.setLoading(false);
   }
 }

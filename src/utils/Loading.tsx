@@ -1,15 +1,12 @@
-import React, { useState } from 'react'
-import {Card, Skeleton, Button, Modal, ModalContent, ModalBody, Spinner} from "@nextui-org/react";
+import {Skeleton, Modal, ModalContent, ModalBody, Spinner} from "@nextui-org/react";
+import { useState } from "react";
 
 const Loading = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-
-  const toggleLoad = () => {
-      setIsLoaded(!isLoaded);
-  };
+  
   return (
     <>
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 p-10">
         <Skeleton isLoaded={isLoaded} className="rounded-lg">
           <div className="h-24 rounded-lg bg-secondary"></div>
         </Skeleton>
@@ -29,14 +26,14 @@ const Loading = () => {
   )
 }
 
-interface ProgressLoadingProps {
+type ProgressLoadingProps = {
   loading: boolean;
 }
 
-export const ProgressLoading: React.FC<ProgressLoadingProps> = ({ loading }) => {
+export const ProgressLoading = (props: ProgressLoadingProps) => {
   return (
     <>
-      <Modal isOpen={loading} backdrop="blur" hideCloseButton className='py-14'>
+      <Modal isOpen={props.loading} backdrop="blur" hideCloseButton className='py-14'>
         <ModalContent>
           <ModalBody>
             <Spinner label="" color="success" labelColor="success"/>

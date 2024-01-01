@@ -19,13 +19,13 @@ import { RemoveInfo } from '../utils/RemoveInfo';
 import { ProgressLoading } from '../utils/Loading';
 
 
-interface EachImageProps {
+type EachImageProps = {
   src: string;
   code: string;
   date: string;
 }
 
-const EachImage = ({ src, code, date }: EachImageProps) => {
+const EachImage = (props: EachImageProps) => {
 
   const [warning, setWarning] = useState<string>("Code");
   const [loading, setLoading] = useState<boolean>(false);
@@ -42,9 +42,9 @@ const EachImage = ({ src, code, date }: EachImageProps) => {
 
     setLoading(true);
     setTimeout(() => {
-      if(currCode === code || currCode === import.meta.env.VITE_ADMIN_KEY){
-        RemoveInfo(code, setLoading, setCurrCode, setOpen);
-        setDB(db.filter((element) => element.hash !== code));
+      if(currCode === props.code || currCode === import.meta.env.VITE_ADMIN_KEY){
+        RemoveInfo({ code: props.code, setLoading, setCurrCode, setOpen });
+        setDB(db.filter((element) => element.hash !== props.code));
       } else {
         setWarning("Wrong code, please try again")
         setLoading(false);
@@ -58,15 +58,15 @@ const EachImage = ({ src, code, date }: EachImageProps) => {
       <Card
         isFooterBlurred
         radius='lg'
-        className='border-none bg-black mb-10 md:max-w-[40%] '
+        className='flex bg-black mb-10 md:max-w-[40%] '
       >
         <Image
           className='object-cover'
           alt='image'
-          src={src}
+          src={props.src}
         />
         <CardFooter className="m-2 justify-between before:bg-white/10 border-white/20 border-1 overflow-hidden py-1 before:rounded-xl rounded-large bottom-1 w-[calc(100%_-_16px)] shadow-small ml-2 z-10">
-          <p className="text-tiny text-white/80">{date}</p>
+          <p className="text-tiny text-white/80">{props.date}</p>
           <Button 
             isLoading={loading}
             onClick={() => setOpen(true)}
