@@ -5,7 +5,15 @@ Are you facing challenges creating advertisements or finding participants for yo
 This prototype is developed using React.ts, Next.UI, and Firebase.
 
 ## Demo
-You can access the live prototype at
+You can access the live prototype at ...
+
+## Preview
+Insert Advertisement <br/>
+<img src="https://github.com/ricotandrio/public-promote/assets/119276763/8004d66a-a154-4194-9a05-02f22adb1b36" width="300" /> <br/>
+Hash Code for Deleting Advertisement <br/> 
+<img src="https://github.com/ricotandrio/public-promote/assets/119276763/a380cfe3-b13e-40ea-8257-c6914af94cf7" width="300" /> <br/>
+Delete Advertisement <br/>
+<img src="https://github.com/ricotandrio/public-promote/assets/119276763/000a30ef-62ef-4140-a11c-e8b0d102ce1b" width="300" /> <br/>
 
 ## React + TypeScript + Vite
 
